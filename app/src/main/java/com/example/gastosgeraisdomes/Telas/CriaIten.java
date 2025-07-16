@@ -92,8 +92,11 @@ public class CriaIten extends Fragment {
                                 db.listaDao().upgrade(listaItens.get(0));
                                 db.itenListaDao().insertAll(itenLista);
                             }
-                            limpa();
-                            //requireActivity().getSupportFragmentManager().popBackStack();
+                            if(arg != null){
+                                requireActivity().getSupportFragmentManager().popBackStack();
+                            }else {
+                                limpa();
+                            }
                         }else {
                             Toast.makeText(requireContext(), "Incira um valor valido", Toast.LENGTH_LONG).show();
                         }
