@@ -79,6 +79,14 @@ public class Finalizar extends Fragment {
         });
     }
 
+    private static void drawStaticLayoutAt(Canvas canvas, StaticLayout layout, float x, float y) {
+        canvas.save();
+        canvas.translate(x, y);
+        layout.draw(canvas);
+        canvas.restore();
+    }
+
+
     public static byte[] gerarPDF(Context context, List<ItenLista> gastos, String data, String totalFormatado, String resto, String gas, String titulo) {
         PdfDocument pdfDocument = new PdfDocument();
         int pageWidth = 595;
@@ -86,13 +94,11 @@ public class Finalizar extends Fragment {
 
         int startX = 40;
         int[] columnWidths = {170, 170, 170};
-        int tableWidth = columnWidths[0]*3;
-
+        int tableWidth = columnWidths[0] * 3;
 
         int paginaAtual = 1;
         int linhaGlobal = 0;
 
-        // Formatador para 2 casas decimais
         DecimalFormat df = new DecimalFormat("#,##0.00");
         String gasFmt = df.format(Double.parseDouble(gas));
         String restoFmt = df.format(Double.parseDouble(resto));
@@ -104,7 +110,7 @@ public class Finalizar extends Fragment {
         int caixaHeight = 40;
         int headerRowHeight = 40;
         int footerHeight = 40 * 2 + 10;
-        int cellPaddingVertical = 6;
+        int cellPaddingVertical = 4;
         int cellPaddingHorizontal = 1;
 
         // Posições das colunas
@@ -117,54 +123,57 @@ public class Finalizar extends Fragment {
             PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, paginaAtual).create();
             PdfDocument.Page page = pdfDocument.startPage(pageInfo);
             Canvas canvas = page.getCanvas();
-            Paint paint = new Paint();
-            paint.setColor(Color.BLACK);
+
+            // Paint para bordas
+            Paint borderPaint = new Paint();
+            borderPaint.setColor(Color.BLACK);
+            borderPaint.setStyle(Paint.Style.STROKE);
+            borderPaint.setStrokeWidth(2);
+
+            // Paint para textos
+            TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+            textPaint.setColor(Color.BLACK);
+            textPaint.setTextSize(14);
+            textPaint.setFakeBoldText(true);
 
             int currentY = topMargin;
 
             // Cabeçalho só na primeira página
             if (paginaAtual == 1) {
-                paint.setTextSize(18);
-                paint.setFakeBoldText(true);
-                float larguraTexto = paint.measureText(titulo);
-                canvas.drawText(titulo, (pageWidth - larguraTexto) / 2, currentY, paint);
+                textPaint.setTextSize(18);
+                float larguraTexto = textPaint.measureText(titulo);
+                canvas.drawText(titulo, (pageWidth - larguraTexto) / 2, currentY, textPaint);
                 currentY += titleHeight;
 
                 // Caixa
-                paint.setStrokeWidth(2);
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + caixaHeight, paint);
-                canvas.drawLine(xCol1, currentY, xCol1, currentY + caixaHeight, paint);
-                canvas.drawLine(xCol2, currentY, xCol2, currentY + caixaHeight, paint);
-                canvas.drawLine(xCol3, currentY, xCol3, currentY + caixaHeight, paint);
-                canvas.drawLine(xCol4, currentY, xCol4, currentY + caixaHeight, paint);
+                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + caixaHeight, borderPaint);
+                canvas.drawLine(xCol1, currentY, xCol1, currentY + caixaHeight, borderPaint);
+                canvas.drawLine(xCol2, currentY, xCol2, currentY + caixaHeight, borderPaint);
+                canvas.drawLine(xCol3, currentY, xCol3, currentY + caixaHeight, borderPaint);
+                canvas.drawLine(xCol4, currentY, xCol4, currentY + caixaHeight, borderPaint);
 
-                paint.setStyle(Paint.Style.FILL);
-                paint.setTextSize(14);
-                paint.setFakeBoldText(true);
+                textPaint.setTextSize(14);
                 String[] caixaTexts = {"Caixa", data, "Total: R$ " + totalFormatado};
                 int[] colStarts = {xCol1, xCol2, xCol3};
                 for (int i = 0; i < caixaTexts.length; i++) {
-                    float textoWidth = paint.measureText(caixaTexts[i]);
+                    float textoWidth = textPaint.measureText(caixaTexts[i]);
                     float posX = colStarts[i] + (columnWidths[i] - textoWidth) / 2;
-                    canvas.drawText(caixaTexts[i], posX, currentY + 25, paint);
+                    canvas.drawText(caixaTexts[i], posX, currentY + 25, textPaint);
                 }
                 currentY += caixaHeight;
 
-                // Cabeçalho
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + headerRowHeight, paint);
-                canvas.drawLine(xCol1, currentY, xCol1, currentY + headerRowHeight, paint);
-                canvas.drawLine(xCol2, currentY, xCol2, currentY + headerRowHeight, paint);
-                canvas.drawLine(xCol3, currentY, xCol3, currentY + headerRowHeight, paint);
-                canvas.drawLine(xCol4, currentY, xCol4, currentY + headerRowHeight, paint);
+                // Cabeçalho da tabela
+                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + headerRowHeight, borderPaint);
+                canvas.drawLine(xCol1, currentY, xCol1, currentY + headerRowHeight, borderPaint);
+                canvas.drawLine(xCol2, currentY, xCol2, currentY + headerRowHeight, borderPaint);
+                canvas.drawLine(xCol3, currentY, xCol3, currentY + headerRowHeight, borderPaint);
+                canvas.drawLine(xCol4, currentY, xCol4, currentY + headerRowHeight, borderPaint);
 
-                paint.setStyle(Paint.Style.FILL);
                 String[] headerTexts = {"ESTABELECIMENTO", "FUNCIONALIDADE", "VALOR"};
                 for (int i = 0; i < headerTexts.length; i++) {
-                    float textoWidth = paint.measureText(headerTexts[i]);
+                    float textoWidth = textPaint.measureText(headerTexts[i]);
                     float posX = colStarts[i] + (columnWidths[i] - textoWidth) / 2;
-                    canvas.drawText(headerTexts[i], posX, currentY + 25, paint);
+                    canvas.drawText(headerTexts[i], posX, currentY + 25, textPaint);
                 }
                 currentY += headerRowHeight;
             }
@@ -175,25 +184,21 @@ public class Finalizar extends Fragment {
             while (linhaGlobal < gastos.size()) {
                 ItenLista gasto = gastos.get(linhaGlobal);
 
-                TextPaint tp = new TextPaint();
-                tp.setTextSize(14);
-                tp.setColor(Color.BLACK);
+                StaticLayout layout1 = StaticLayout.Builder.obtain(
+                        gasto.getEstabelecimento(), 0, gasto.getEstabelecimento().length(),
+                        textPaint, columnWidths[0] - cellPaddingHorizontal * 2
+                ).setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false).build();
 
-                StaticLayout layout1 = StaticLayout.Builder.obtain(gasto.getEstabelecimento(), 0, gasto.getEstabelecimento().length(), tp, columnWidths[0] - cellPaddingHorizontal * 2)
-                        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-                        .setIncludePad(false)
-                        .build();
+                StaticLayout layout2 = StaticLayout.Builder.obtain(
+                        gasto.getFuncao(), 0, gasto.getFuncao().length(),
+                        textPaint, columnWidths[1] - cellPaddingHorizontal * 2
+                ).setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false).build();
 
-                StaticLayout layout2 = StaticLayout.Builder.obtain(gasto.getFuncao(), 0, gasto.getFuncao().length(), tp, columnWidths[1] - cellPaddingHorizontal * 2)
-                        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-                        .setIncludePad(false)
-                        .build();
-
-                String valorStr = "R$ " + df.format(gasto.getValor()); // << formatação aplicada aqui
-                StaticLayout layout3 = StaticLayout.Builder.obtain(valorStr, 0, valorStr.length(), tp, columnWidths[2] - cellPaddingHorizontal * 2)
-                        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-                        .setIncludePad(false)
-                        .build();
+                String valorStr = "R$ " + df.format(gasto.getValor());
+                StaticLayout layout3 = StaticLayout.Builder.obtain(
+                        valorStr, 0, valorStr.length(),
+                        textPaint, columnWidths[2] - cellPaddingHorizontal * 2
+                ).setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false).build();
 
                 int contentMaxHeight = Math.max(layout1.getHeight(), Math.max(layout2.getHeight(), layout3.getHeight()));
                 int cellHeight = contentMaxHeight + cellPaddingVertical * 2;
@@ -204,14 +209,13 @@ public class Finalizar extends Fragment {
                     break;
                 }
 
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + cellHeight, paint);
-                canvas.drawLine(xCol1, currentY, xCol1, currentY + cellHeight, paint);
-                canvas.drawLine(xCol2, currentY, xCol2, currentY + cellHeight, paint);
-                canvas.drawLine(xCol3, currentY, xCol3, currentY + cellHeight, paint);
-                canvas.drawLine(xCol4, currentY, xCol4, currentY + cellHeight, paint);
+                // Desenha a célula
+                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + cellHeight, borderPaint);
+                canvas.drawLine(xCol1, currentY, xCol1, currentY + cellHeight, borderPaint);
+                canvas.drawLine(xCol2, currentY, xCol2, currentY + cellHeight, borderPaint);
+                canvas.drawLine(xCol3, currentY, xCol3, currentY + cellHeight, borderPaint);
+                canvas.drawLine(xCol4, currentY, xCol4, currentY + cellHeight, borderPaint);
 
-                paint.setStyle(Paint.Style.FILL);
                 float drawX1 = xCol1 + cellPaddingHorizontal;
                 float drawX2 = xCol2 + cellPaddingHorizontal;
                 float drawX3 = xCol3 + cellPaddingHorizontal;
@@ -234,37 +238,33 @@ public class Finalizar extends Fragment {
                 int rowH = 40;
 
                 // TOTAL
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + rowH, paint);
-                canvas.drawLine(xCol1, currentY, xCol1, currentY + rowH, paint);
-                canvas.drawLine(xCol2, currentY, xCol2, currentY + rowH, paint);
-                canvas.drawLine(xCol3, currentY, xCol3, currentY + rowH, paint);
-                canvas.drawLine(xCol4, currentY, xCol4, currentY + rowH, paint);
+                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol1, currentY, xCol1, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol2, currentY, xCol2, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol3, currentY, xCol3, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol4, currentY, xCol4, currentY + rowH, borderPaint);
 
-                paint.setStyle(Paint.Style.FILL);
                 String[] t = {" ", "TOTAL", "R$ " + gasFmt};
                 int[] colStarts = {xCol1, xCol2, xCol3};
                 for (int i = 0; i < t.length; i++) {
-                    float textoWidth = paint.measureText(t[i]);
+                    float textoWidth = textPaint.measureText(t[i]);
                     float posX = colStarts[i] + (columnWidths[i] - textoWidth) / 2;
-                    canvas.drawText(t[i], posX, currentY + 25, paint);
+                    canvas.drawText(t[i], posX, currentY + 25, textPaint);
                 }
                 currentY += rowH;
 
                 // SOBRA DO MÊS
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + rowH, paint);
-                canvas.drawLine(xCol1, currentY, xCol1, currentY + rowH, paint);
-                canvas.drawLine(xCol2, currentY, xCol2, currentY + rowH, paint);
-                canvas.drawLine(xCol3, currentY, xCol3, currentY + rowH, paint);
-                canvas.drawLine(xCol4, currentY, xCol4, currentY + rowH, paint);
+                canvas.drawRect(startX, currentY, startX + tableWidth, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol1, currentY, xCol1, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol2, currentY, xCol2, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol3, currentY, xCol3, currentY + rowH, borderPaint);
+                canvas.drawLine(xCol4, currentY, xCol4, currentY + rowH, borderPaint);
 
-                paint.setStyle(Paint.Style.FILL);
                 String[] fim = {" ", "Sobra do Mês", "R$ " + restoFmt};
                 for (int i = 0; i < fim.length; i++) {
-                    float textoWidth = paint.measureText(fim[i]);
+                    float textoWidth = textPaint.measureText(fim[i]);
                     float posX = colStarts[i] + (columnWidths[i] - textoWidth) / 2;
-                    canvas.drawText(fim[i], posX, currentY + 25, paint);
+                    canvas.drawText(fim[i], posX, currentY + 25, textPaint);
                 }
             }
 
@@ -280,13 +280,6 @@ public class Finalizar extends Fragment {
         }
         pdfDocument.close();
         return outputStream.toByteArray();
-    }
-
-    private static void drawStaticLayoutAt(Canvas canvas, StaticLayout layout, float x, float y) {
-        canvas.save();
-        canvas.translate(x, y);
-        layout.draw(canvas);
-        canvas.restore();
     }
 
 
