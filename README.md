@@ -1,7 +1,7 @@
 # 📊 Controle de Gastos Mensais
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Vers%C3%A3o-2.0.1-blue?style=for-the-badge&logo=android" alt="Versão 2.0.1">
+  <img src="https://img.shields.io/badge/Vers%C3%A3o-2.0.1-blue?style=for-the-badge&logo=android" alt="Versão 3.0.0">
   <img src="https://img.shields.io/badge/Autor-Cassiano%20Carvalho-orange?style=for-the-badge" alt="Autor Cassiano">
 </p>
 
